@@ -1,20 +1,20 @@
 {
   "publisher": "simonhe",
-  "name": "simon-smart-click",
-  "displayName": "simon-smart-click",
+  "name": "auto-click",
+  "displayName": "auto-click",
   "version": "0.0.0",
   "packageManager": "pnpm@8.1.1",
-  "description": "simon-smart-click",
+  "description": "auto-click",
   "author": "Simon He <https://github.com/Simon-He95>",
   "license": "MIT",
   "funding": "https://github.com/sponsors/Simon-He95",
-  "homepage": "https://github.com/Simon-He95/simon-smart-click#readme",
+  "homepage": "https://github.com/Simon-He95/auto-click#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Simon-He95/simon-smart-click"
+    "url": "https://github.com/Simon-He95/auto-click"
   },
   "bugs": {
-    "url": "https://github.com/Simon-He95/simon-smart-click/issues"
+    "url": "https://github.com/Simon-He95/auto-click/issues"
   },
   "sponsor": {
     "url": "https://github.com/Simon-He95/sponsor"
