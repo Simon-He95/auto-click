@@ -5,7 +5,7 @@ import { window } from 'vscode'
 export function activate(context: ExtensionContext) {
   let timer: any = null
   let isChanging = false
-  const STOP_REG = /[\s"\>\<\/{},':;\(\)@=]/
+  const STOP_REG = /[\s"\>\<\/{},':;\.\(\)@=+[\]\!]/
   context.subscriptions.push(addEventListener('selection-change', (e) => {
     if (timer)
       clearTimeout(timer)
@@ -15,8 +15,10 @@ export function activate(context: ExtensionContext) {
     if (selections.length !== 1)
       return
     const selection = selections[0]
+    if (selection.start.line !== selection.end.line)
+      return
     if (selection.start.line === selection.end.line && selection.start.character === selection.end.character) {
-      // 单击，如果单机超过500ms，则自动选中多个内容
+      // 单击，如果单机超过800ms，则自动选中多个内容
       let start = selection.start.character
       const line: number = selection.start.line
       const lineText = getLineText(selection.start.line)
@@ -35,7 +37,7 @@ export function activate(context: ExtensionContext) {
         if (!editor)
           return
         setSelection(newStart, newEnd)
-      }, 500)
+      }, 800)
       return
     }
     let start = selection.start.character
