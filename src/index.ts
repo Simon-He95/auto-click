@@ -62,11 +62,16 @@ export function activate(context: ExtensionContext) {
       setSelection(newStart, newEnd)
     }, 500)
   }))
+  let stop: any = null
   context.subscriptions.push(addEventListener('text-change', () => {
     isChanging = true
     if (timer)
       clearTimeout(timer)
-    setTimeout(() => isChanging = false, 50)
+    if (stop)
+      clearTimeout(stop)
+    stop = setTimeout(() =>
+      isChanging = false
+    , 500)
   }))
 }
 
