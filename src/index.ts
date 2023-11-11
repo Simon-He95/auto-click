@@ -6,9 +6,11 @@ export function activate(context: ExtensionContext) {
   let timer: any = null
   let isChanging = false
   const STOP_REG = /[\s"\>\<\/{},':;\.\(\)@=+[\]\!]/
+  let preKind: number | null = null
   context.subscriptions.push(addEventListener('selection-change', (e) => {
     if (timer)
       clearTimeout(timer)
+
     if (isChanging)
       return
     const selections = e.selections
@@ -17,6 +19,23 @@ export function activate(context: ExtensionContext) {
     const selection = selections[0]
     if (selection.start.line !== selection.end.line)
       return
+
+    if (!preKind) {
+      preKind = e.kind
+    }
+    else if ((preKind === 2) && (preKind === e.kind)) {
+      // 使用鼠标拖拽，就不干涉
+      preKind = e.kind
+      return
+    }
+    else if ((preKind === 1) && (preKind === e.kind)) {
+      // 键盘一个一个移动，也不干涉
+      preKind = e.kind
+      return
+    }
+    else {
+      preKind = null
+    }
     if (selection.start.line === selection.end.line && selection.start.character === selection.end.character) {
       // 单击，如果单机超过800ms，则自动选中多个内容
       let start = selection.start.character
@@ -27,8 +46,11 @@ export function activate(context: ExtensionContext) {
       let end = selection.end.character
       while (!STOP_REG.test(lineText[end]) && end < lineText.length)
         end++
-      if ((start === selection.start.character) && (end === selection.end.character))
+
+      if ((start === selection.start.character) || (end === selection.end.character)) {
+        preKind = null
         return
+      }
 
       const newStart: [number, number] = [line, +start]
       const newEnd: [number, number] = [line, +end]
@@ -48,8 +70,6 @@ export function activate(context: ExtensionContext) {
     let end = selection.end.character
     while (!STOP_REG.test(lineText[end]) && end < lineText.length)
       end++
-    if ((start === selection.start.character) && (end === selection.end.character))
-      return
 
     const newStart: [number, number] = [line, +start]
     const newEnd: [number, number] = [line, +end]
