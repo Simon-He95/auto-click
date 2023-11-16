@@ -5,8 +5,8 @@ import { window } from 'vscode'
 export function activate(context: ExtensionContext) {
   let timer: any = null
   let isChanging = false
-  const STOP_REG = /[\s"\>\<\/{},':;\.\(\)@=+[\]\!]/
-  let preKind: number | null = null
+  const STOP_REG = /[\s"\>\<\/{},':;\.\(\)@=+[\]\!`]/
+  let preKind: number | null | undefined = null
   context.subscriptions.push(addEventListener('selection-change', (e) => {
     if (timer)
       clearTimeout(timer)
@@ -17,10 +17,11 @@ export function activate(context: ExtensionContext) {
     if (selections.length !== 1)
       return
     const selection = selections[0]
+
     if (selection.start.line !== selection.end.line)
       return
 
-    if (!preKind) {
+    if (preKind === null) {
       preKind = e.kind
     }
     else if ((preKind === 2) && (preKind === e.kind)) {
@@ -33,8 +34,13 @@ export function activate(context: ExtensionContext) {
       preKind = e.kind
       return
     }
+    else if ((preKind === undefined) && (e.kind === 1)) {
+      // 判断可能是要单独指定到某一个，也不干涉
+      preKind = e.kind
+      return
+    }
     else {
-      preKind = null
+      preKind = undefined
     }
     if (selection.start.line === selection.end.line && selection.start.character === selection.end.character) {
       // 单击，如果单机超过800ms，则自动选中多个内容
@@ -59,7 +65,7 @@ export function activate(context: ExtensionContext) {
         if (!editor)
           return
         setSelection(newStart, newEnd)
-      }, 800)
+      }, 500)
       return
     }
     let start = selection.start.character
