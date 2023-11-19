@@ -7,16 +7,24 @@ export function activate(context: ExtensionContext) {
   let isChanging = false
   const STOP_REG = /[\s"\>\<\/{},':;\.\(\)@=+[\]\!`\?]/
   let preKind: number | null | undefined = null
+  let preActive: any = null
   context.subscriptions.push(addEventListener('selection-change', (e) => {
     if (timer)
       clearTimeout(timer)
 
+    const selections = e.selections
+    if (selections.length !== 1) {
+      preActive = null
+      preKind = null
+      return
+    }
+    const selection = selections[0]
+
+    if (!preActive)
+      preActive = selection.active
+
     if (isChanging)
       return
-    const selections = e.selections
-    if (selections.length !== 1)
-      return
-    const selection = selections[0]
 
     if (selection.start.line !== selection.end.line)
       return
@@ -43,7 +51,9 @@ export function activate(context: ExtensionContext) {
       preKind = undefined
     }
     if (selection.start.line === selection.end.line && selection.start.character === selection.end.character) {
+      preKind = null
       // 单击，如果单机超过800ms，则自动选中多个内容
+      preActive = selection.active
       let start = selection.start.character
       const line: number = selection.start.line
       const lineText = getLineText(selection.start.line)
@@ -60,6 +70,7 @@ export function activate(context: ExtensionContext) {
 
       const newStart: [number, number] = [line, +start]
       const newEnd: [number, number] = [line, +end]
+
       timer = setTimeout(() => {
         const editor = window.activeTextEditor?.document
         if (!editor)
@@ -77,6 +88,10 @@ export function activate(context: ExtensionContext) {
     while (!STOP_REG.test(lineText[end]) && end < lineText.length)
       end++
 
+    if (+start === +selection.start.character && +end === +selection.end.character) {
+      preKind = null
+      return
+    }
     const newStart: [number, number] = [line, +start]
     const newEnd: [number, number] = [line, +end]
 
@@ -85,7 +100,22 @@ export function activate(context: ExtensionContext) {
       const editor = window.activeTextEditor?.document
       if (!editor)
         return
-      setSelection(newStart, newEnd)
+
+      if (preActive === null) {
+        setSelection(newStart, newEnd)
+      }
+      else {
+        if (preActive.line !== line) {
+          preActive = null
+          setSelection(newStart, newEnd)
+        }
+        else if (preActive.character > selection.active.character) {
+          setSelection(newStart, newEnd, 'left')
+        }
+        else {
+          setSelection(newStart, newEnd)
+        }
+      }
     }, 500)
   }))
   let stop: any = null
