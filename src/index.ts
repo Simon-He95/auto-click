@@ -1,13 +1,15 @@
-import { addEventListener, getLineText, setSelection } from '@vscode-use/utils'
+import { addEventListener, getConfiguration, getLineText, setSelection } from '@vscode-use/utils'
 import type { ExtensionContext } from 'vscode'
 import { window } from 'vscode'
 
 export function activate(context: ExtensionContext) {
   let timer: any = null
   let isChanging = false
-  const STOP_REG = /[\s"\>\<\/{},':;\.\(\)@=+[\]\!`\?]/
+  const STOP_REG = /[\s"\>\<\/{},':;\.\(\)@=+[\]\!`\?\$]/
   let preKind: number | null | undefined = null
   let preActive: any = null
+  const second = getConfiguration('autoclick').get('second') as number
+
   context.subscriptions.push(addEventListener('selection-change', (e) => {
     if (timer)
       clearTimeout(timer)
@@ -76,7 +78,7 @@ export function activate(context: ExtensionContext) {
         if (!editor)
           return
         setSelection(newStart, newEnd)
-      }, 500)
+      }, second)
       return
     }
     let start = selection.start.character

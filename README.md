@@ -5,6 +5,20 @@
 
 ![demo](assets/demo.gif)
 
+```json
+    "configuration": {
+      "type": "object",
+      "title": "UnoCSS",
+      "properties": {
+        "autoclick.second": {
+          "type": "number",
+          "default": 500,
+          "description": "控制间隔多久触发自动点击"
+        }
+      }
+    }
+```
+
 ## :coffee:
 
 [buy me a cup of coffee](https://github.com/Simon-He95/sponsor)
