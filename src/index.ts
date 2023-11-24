@@ -21,7 +21,6 @@ export function activate(context: ExtensionContext) {
       return
     }
     const selection = selections[0]
-
     if (!preActive)
       preActive = selection.active
 
@@ -120,8 +119,20 @@ export function activate(context: ExtensionContext) {
       }
     }, 500)
   }))
+
   let stop: any = null
+
   context.subscriptions.push(addEventListener('text-change', () => {
+    isChanging = true
+    if (timer)
+      clearTimeout(timer)
+    if (stop)
+      clearTimeout(stop)
+    stop = setTimeout(() =>
+      isChanging = false
+    , 500)
+  }))
+  context.subscriptions.push(addEventListener('activeText-change', () => {
     isChanging = true
     if (timer)
       clearTimeout(timer)
