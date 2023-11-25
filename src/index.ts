@@ -1,13 +1,14 @@
-import { addEventListener, getConfiguration, getLineText, setSelection } from '@vscode-use/utils'
+import { addEventListener, getConfiguration, getLineText, setSelection, setSelections } from '@vscode-use/utils'
 import type { ExtensionContext } from 'vscode'
 import { window } from 'vscode'
 
 export function activate(context: ExtensionContext) {
   let timer: any = null
   let isChanging = false
-  const STOP_REG = /[\s"\>\<\/{},':;\.\(\)@=+[\]\!`\?\$]/
+  const STOP_REG = /[\s"\>\<\/{},':;\.\(\)@=+[\]\!`\?\$\|\&]/
   let preKind: number | null | undefined = null
   let preActive: any = null
+  let preSelection: any = null
   const second = getConfiguration('autoclick').get('second') as number
   const updateSecond = getConfiguration('autoclick').get('updateSecond') as number
 
@@ -19,8 +20,38 @@ export function activate(context: ExtensionContext) {
     if (selections.length !== 1) {
       preActive = null
       preKind = null
+      // 多选
+      // 自动选择附近相关的内容
+      timer = setTimeout(() => {
+        const newSelections = selections.map((s: any) => {
+          const start = s.start
+          const end = s.end
+          let _start = start.character
+          let _end = end.character
+          const origin = { start: [start.line, start.character], end: [end.line, end.character] }
+          if (start.line !== end.line)
+            return origin
+          const _lineText = getLineText(start.line)
+          while (_start > 0 && !STOP_REG.test(_lineText[_start]))
+            _start--
+
+          if (_start + 1 >= start.character)
+            return origin
+
+          while (_end < _lineText.length && !STOP_REG.test(_lineText[_end]))
+            _end++
+
+          if (_end - 1 < end.character)
+            return origin
+
+          return { start: [start.line, _start + 1], end: [end.line, _end] }
+        })
+        setSelections(newSelections)
+      }, second)
+
       return
     }
+
     const selection = selections[0]
     if (!preActive)
       preActive = selection.active
@@ -44,18 +75,13 @@ export function activate(context: ExtensionContext) {
       preKind = e.kind
       return
     }
-    else if ((preKind === undefined) && (e.kind === 1)) {
-      // 判断可能是要单独指定到某一个，也不干涉
-      preKind = e.kind
-      return
-    }
     else {
       preKind = undefined
     }
     if (selection.start.line === selection.end.line && selection.start.character === selection.end.character) {
-      preKind = null
       // 单击，如果单机超过800ms，则自动选中多个内容
       preActive = selection.active
+      preSelection = null
       let start = selection.start.character
       const line: number = selection.start.line
       const lineText = getLineText(selection.start.line)
@@ -81,6 +107,17 @@ export function activate(context: ExtensionContext) {
       }, second)
       return
     }
+    else if (preSelection) {
+      // 有选中内容 如果选中内容在之前的选中之间则不触发
+      const [start, end] = preSelection
+      if (selection.active.character >= start.character && selection.active.character <= end.character) {
+        preSelection = [selection.start, selection.end]
+        return
+      }
+    }
+    else {
+      preSelection = [selection.start, selection.end]
+    }
     let start = selection.start.character
     const line: number = selection.start.line
     const lineText = getLineText(selection.start.line)
@@ -92,6 +129,8 @@ export function activate(context: ExtensionContext) {
 
     if (+start === +selection.start.character && +end === +selection.end.character) {
       preKind = null
+      preActive = selection.active
+      preSelection = [selection.start, selection.end]
       return
     }
     const newStart: [number, number] = [line, +start]
@@ -103,15 +142,16 @@ export function activate(context: ExtensionContext) {
       if (!editor)
         return
 
-      if (preActive === null) {
+      if (!preSelection) {
         setSelection(newStart, newEnd)
       }
       else {
+        const start = preSelection[0]
         if (preActive.line !== line) {
           preActive = null
           setSelection(newStart, newEnd)
         }
-        else if (preActive.character > selection.active.character) {
+        else if (start.character >= selection.active.character) {
           setSelection(newStart, newEnd, 'left')
         }
         else {
