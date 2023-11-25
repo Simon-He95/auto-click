@@ -9,6 +9,7 @@ export function activate(context: ExtensionContext) {
   let preKind: number | null | undefined = null
   let preActive: any = null
   const second = getConfiguration('autoclick').get('second') as number
+  const updateSecond = getConfiguration('autoclick').get('updateSecond') as number
 
   context.subscriptions.push(addEventListener('selection-change', (e) => {
     if (timer)
@@ -117,7 +118,7 @@ export function activate(context: ExtensionContext) {
           setSelection(newStart, newEnd)
         }
       }
-    }, 500)
+    }, updateSecond)
   }))
 
   let stop: any = null
