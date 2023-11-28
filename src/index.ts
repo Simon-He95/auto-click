@@ -5,7 +5,7 @@ import { window } from 'vscode'
 export function activate(context: ExtensionContext) {
   let timer: any = null
   let isChanging = false
-  const STOP_REG = /[\s"\>\<\/{},':;\.\(\)@=+[\]\!`\?\$\|\&]/
+  const STOP_REG = /[\s"\>\<\/{},':;\.\(\)@=+[\]\!`\?\$\|\&\#]/
   let preKind: number | null | undefined = null
   let preActive: any = null
   let preSelection: any = null
