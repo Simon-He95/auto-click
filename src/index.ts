@@ -121,12 +121,17 @@ export function activate(context: ExtensionContext) {
     let start = selection.start.character
     const line: number = selection.start.line
     const lineText = getLineText(selection.start.line)
-    while (!STOP_REG.test(lineText[start - 1]) && start > 0)
-      start--
-    let end = selection.end.character
-    while (!STOP_REG.test(lineText[end]) && end < lineText.length)
-      end++
 
+    if (preSelection[0].character >= selection.active.character) {
+      while (!STOP_REG.test(lineText[start - 1]) && start > 0)
+        start--
+    }
+
+    let end = selection.end.character
+    if (preSelection[1].character <= selection.active.character) {
+      while (!STOP_REG.test(lineText[end]) && end < lineText.length)
+        end++
+    }
     if (+start === +selection.start.character && +end === +selection.end.character) {
       preKind = null
       preActive = selection.active
