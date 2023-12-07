@@ -2,6 +2,7 @@ import { addEventListener, getConfiguration, getLineText, setSelection, setSelec
 import type { ExtensionContext } from 'vscode'
 import { window } from 'vscode'
 
+// todo: 修复如果未有选中内容使用方向大跳，不触发自动事件
 export function activate(context: ExtensionContext) {
   let timer: any = null
   let isChanging = false
@@ -51,7 +52,6 @@ export function activate(context: ExtensionContext) {
 
       return
     }
-
     const selection = selections[0]
     if (!preActive)
       preActive = selection.active
@@ -80,6 +80,8 @@ export function activate(context: ExtensionContext) {
     }
     if (selection.start.line === selection.end.line && selection.start.character === selection.end.character) {
       // 单击，如果单机超过800ms，则自动选中多个内容
+      if (preKind === undefined)
+        return
       preActive = selection.active
       preSelection = null
       let start = selection.start.character
