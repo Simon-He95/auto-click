@@ -6,7 +6,7 @@ import { window } from 'vscode'
 export function activate(context: ExtensionContext) {
   let timer: any = null
   let isChanging = false
-  const STOP_REG = /[\s"\>\<\/{},':;\.\(\)@=+[\]\!`\?\$\|\&\#，。]/
+  const STOP_REG = /[\s"\>\<\/{},':;\.\(\)@=+[\]\!`\?\$\|\&\#，。\*]/
   let preKind: number | null | undefined = null
   let preActive: any = null
   let preSelection: any = null
@@ -14,9 +14,10 @@ export function activate(context: ExtensionContext) {
   const updateSecond = getConfiguration('autoclick').get('updateSecond') as number
 
   context.subscriptions.push(addEventListener('selection-change', (e) => {
+    console.log('selection-change')
     if (timer)
       clearTimeout(timer)
-
+    
     const selections = e.selections
     if (selections.length !== 1) {
       preActive = null
@@ -52,6 +53,7 @@ export function activate(context: ExtensionContext) {
 
       return
     }
+
     const selection = selections[0]
     if (!preActive)
       preActive = selection.active
