@@ -14,11 +14,18 @@ export function activate(context: ExtensionContext) {
   const updateSecond = getConfiguration('autoclick').get('updateSecond') as number
 
   context.subscriptions.push(addEventListener('selection-change', (e) => {
-    console.log('selection-change')
     if (timer)
       clearTimeout(timer)
-    
+
     const selections = e.selections
+    const selection = selections[0]
+
+    if (!preActive)
+      preActive = selection.active
+
+    if (isChanging)
+      return
+
     if (selections.length !== 1) {
       preActive = null
       preKind = null
@@ -54,13 +61,6 @@ export function activate(context: ExtensionContext) {
       return
     }
 
-    const selection = selections[0]
-    if (!preActive)
-      preActive = selection.active
-
-    if (isChanging)
-      return
-
     if (selection.start.line !== selection.end.line)
       return
 
@@ -82,8 +82,6 @@ export function activate(context: ExtensionContext) {
     }
     if (selection.start.line === selection.end.line && selection.start.character === selection.end.character) {
       // 单击，如果单机超过800ms，则自动选中多个内容
-      if (preKind === undefined)
-        return
       preActive = selection.active
       preSelection = null
       let start = selection.start.character
