@@ -10,6 +10,7 @@ export function activate(context: ExtensionContext) {
   let preKind: number | null | undefined = null
   let preActive: any = null
   let preSelection: any = null
+  let preSelections: any = null
   const second = getConfiguration('autoclick').get('second') as number
   const updateSecond = getConfiguration('autoclick').get('updateSecond') as number
 
@@ -37,30 +38,58 @@ export function activate(context: ExtensionContext) {
           const end = s.end
           let _start = start.character
           let _end = end.character
+          let isReverse = false
+          let flag = false
           const origin = { start: [start.line, start.character], end: [end.line, end.character] }
           if (start.line !== end.line)
             return origin
           const _lineText = getLineText(start.line)
-          while (_start > 0 && !STOP_REG.test(_lineText[_start]))
-            _start--
-
-          if (_start + 1 >= start.character)
+          if ((e.kind !== 2) && (_start === start.character) && (end.character === start.character)) {
+            // 在最左侧边缘未有选中值，不处理
             return origin
+          }
 
-          while (_end < _lineText.length && !STOP_REG.test(_lineText[_end]))
-            _end++
-
-          if (_end - 1 < end.character)
+          if ((e.kind !== 2) && (start.character === end.character) && (_end === _end.character)) {
+            // 在最右侧边缘未有选中值，不处理
             return origin
+          }
+          // 如果有选中值了，看前一次该行的位置
+          if (preSelections) {
+            const target = preSelections.find(({ start: preStart, end: preEnd }: any) => ((preStart[0] === start.line) && (preStart[1] === _start)) || ((preEnd[0] === end.line) && (preEnd[1] === _end)))
+            if (target && (target.start[1] < s.active.character) && (s.active.character < target.end[1])) {
+              // 已经有选中值了，现在往会选了，也不处理
+              return origin
+            }
+            else if (!target && e.kind === 2) {
+              flag = true
+            }
+          }
+          else {
+            flag = true
+          }
+          if (_end > s.active.character) {
+            // 从右往左选
+            isReverse = true
+          }
+          if (isReverse || flag) {
+            while (_start > 0 && !STOP_REG.test(_lineText[_start - 1]))
+              _start--
+          }
 
-          return { start: [start.line, _start + 1], end: [end.line, _end] }
+          if (!isReverse || flag) {
+            while (_end < _lineText.length && !STOP_REG.test(_lineText[_end]))
+              _end++
+          }
+
+          return { start: [start.line, _start], end: [end.line, _end], position: isReverse ? 'left' : 'right' }
         })
+
+        preSelections = newSelections
         setSelections(newSelections)
       }, second)
-
       return
     }
-
+    preSelections = null
     if (selection.start.line !== selection.end.line)
       return
 
@@ -80,10 +109,15 @@ export function activate(context: ExtensionContext) {
     else {
       preKind = undefined
     }
+
     if (selection.start.line === selection.end.line && selection.start.character === selection.end.character) {
       // 单击，如果单机超过800ms，则自动选中多个内容
       preActive = selection.active
       preSelection = null
+      if (e.kind !== 2) {
+        preKind = null
+        return
+      }
       let start = selection.start.character
       const line: number = selection.start.line
       const lineText = getLineText(selection.start.line)
