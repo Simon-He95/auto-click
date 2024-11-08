@@ -216,6 +216,7 @@ export function activate(context: ExtensionContext) {
   }))
   context.subscriptions.push(addEventListener('activeText-change', () => {
     isChanging = true
+    preKind = null
     if (timer)
       clearTimeout(timer)
     if (stop)

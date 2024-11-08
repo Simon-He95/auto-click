@@ -3,7 +3,7 @@
   "name": "auto-click",
   "displayName": "auto-click",
   "version": "0.0.16",
-  "packageManager": "pnpm@8.1.1",
+  "packageManager": "pnpm@8.15.9",
   "description": "auto-click",
   "author": "Simon He <https://github.com/Simon-He95>",
   "license": "MIT",
@@ -28,7 +28,7 @@
     "dist"
   ],
   "engines": {
-    "vscode": "^1.77.0"
+    "vscode": "^1.95.0"
   },
   "activationEvents": [
     "onStartupFinished"
@@ -63,18 +63,17 @@
     "release": "bumpp && pnpm run publish"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^0.38.4",
-    "@types/node": "^18.15.11",
-    "@types/vscode": "^1.77.0",
+    "@antfu/eslint-config": "^0.38.6",
+    "@types/node": "^18.19.64",
+    "@types/vscode": "^1.95.0",
     "@vscode-use/utils": "^0.0.62",
-    "bumpp": "^9.1.0",
-    "eslint": "^8.37.0",
+    "bumpp": "^9.8.1",
+    "eslint": "^8.57.1",
     "esno": "^0.16.3",
-    "pnpm": "^8.1.1",
+    "pnpm": "^8.15.9",
     "rimraf": "^4.4.1",
     "tsup": "^6.7.0",
-    "typescript": "^5.0.3",
-    "vite": "^4.2.1",
+    "typescript": "^5.6.3",
     "vitest": "^0.29.8",
     "vsce": "^2.15.0"
   }
