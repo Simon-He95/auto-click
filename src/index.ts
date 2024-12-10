@@ -1,20 +1,18 @@
-import { addEventListener, getConfiguration, getLineText, setSelection, setSelections } from '@vscode-use/utils'
-import type { ExtensionContext } from 'vscode'
-import { window } from 'vscode'
+import { addEventListener, createExtension, getActiveTextEditor, getConfiguration, getLineText, setSelection, setSelections } from '@vscode-use/utils'
 
 // todo: 修复如果未有选中内容使用方向大跳，不触发自动事件
-export function activate(context: ExtensionContext) {
+export = createExtension(() => {
   let timer: any = null
   let isChanging = false
-  const STOP_REG = /[\s"\>\<\/{},':;\.\(\)@=+[\]\!`\?\$\|\&\#，。\*]/
+  const STOP_REG = /[\s"></{},':;.()@=+[\]!`?$|&#，。*]/
   let preKind: number | null | undefined = null
   let preActive: any = null
   let preSelection: any = null
   let preSelections: any = null
-  const second = getConfiguration('autoclick').get('second') as number
-  const updateSecond = getConfiguration('autoclick').get('updateSecond') as number
+  const second = getConfiguration('autoclick.second') as number
+  const updateSecond = getConfiguration('autoclick.updateSecond') as number
 
-  context.subscriptions.push(addEventListener('selection-change', (e) => {
+  addEventListener('selection-change', (e) => {
     if (timer)
       clearTimeout(timer)
 
@@ -136,7 +134,7 @@ export function activate(context: ExtensionContext) {
       const newEnd: [number, number] = [line, +end]
 
       timer = setTimeout(() => {
-        const editor = window.activeTextEditor?.document
+        const editor = getActiveTextEditor()?.document
         if (!editor)
           return
         setSelection(newStart, newEnd)
@@ -179,7 +177,7 @@ export function activate(context: ExtensionContext) {
 
     // 如果间隔500ms没有新的改变则选中大面积
     timer = setTimeout(() => {
-      const editor = window.activeTextEditor?.document
+      const editor = getActiveTextEditor()?.document
       if (!editor)
         return
 
@@ -200,21 +198,20 @@ export function activate(context: ExtensionContext) {
         }
       }
     }, updateSecond)
-  }))
+  })
 
   let stop: any = null
 
-  context.subscriptions.push(addEventListener('text-change', () => {
+  addEventListener('text-change', () => {
     isChanging = true
     if (timer)
       clearTimeout(timer)
     if (stop)
       clearTimeout(stop)
     stop = setTimeout(() =>
-      isChanging = false
-    , 500)
-  }))
-  context.subscriptions.push(addEventListener('activeText-change', () => {
+      isChanging = false, 500)
+  })
+  addEventListener('activeText-change', () => {
     isChanging = true
     preKind = null
     if (timer)
@@ -222,11 +219,6 @@ export function activate(context: ExtensionContext) {
     if (stop)
       clearTimeout(stop)
     stop = setTimeout(() =>
-      isChanging = false
-    , 500)
-  }))
-}
-
-export function deactivate() {
-
-}
+      isChanging = false, 500)
+  })
+})
