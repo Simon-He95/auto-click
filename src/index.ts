@@ -1,6 +1,5 @@
 import { addEventListener, createExtension, getActiveTextEditor, getConfiguration, getLineText, setSelection, setSelections } from '@vscode-use/utils'
 
-// todo: 修复如果未有选中内容使用方向大跳，不触发自动事件
 export = createExtension(() => {
   let timer: any = null
   let isChanging = false
@@ -31,6 +30,9 @@ export = createExtension(() => {
       // 多选
       // 自动选择附近相关的内容
       timer = setTimeout(() => {
+        // 如果 selection 的光标没有选中多个中没有一个有多个字符串，则不处理
+        if (selections.every(s => s.start.character === s.end.character))
+          return
         const newSelections = selections.map((s: any) => {
           const start = s.start
           const end = s.end
@@ -41,7 +43,7 @@ export = createExtension(() => {
           const origin = { start: [start.line, start.character], end: [end.line, end.character] }
           if (start.line !== end.line)
             return origin
-          const _lineText = getLineText(start.line)
+          const _lineText = getLineText(start.line)!
           if ((e.kind !== 2) && (_start === start.character) && (end.character === start.character)) {
             // 在最左侧边缘未有选中值，不处理
             return origin
@@ -83,7 +85,7 @@ export = createExtension(() => {
         })
 
         preSelections = newSelections
-        setSelections(newSelections)
+        setSelections(newSelections as { start: [number, number], end: [number, number], position?: 'left' | 'right' }[])
       }, second)
       return
     }
@@ -118,7 +120,7 @@ export = createExtension(() => {
       }
       let start = selection.start.character
       const line: number = selection.start.line
-      const lineText = getLineText(selection.start.line)
+      const lineText = getLineText(selection.start.line)!
       while (!STOP_REG.test(lineText[start - 1]) && start > 0)
         start--
       let end = selection.end.character
@@ -154,7 +156,7 @@ export = createExtension(() => {
     }
     let start = selection.start.character
     const line: number = selection.start.line
-    const lineText = getLineText(selection.start.line)
+    const lineText = getLineText(selection.start.line)!
 
     if (preSelection[0].character >= selection.active.character) {
       while (!STOP_REG.test(lineText[start - 1]) && start > 0)
