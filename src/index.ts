@@ -139,7 +139,7 @@ export = createExtension(() => {
         const editor = getActiveTextEditor()?.document
         if (!editor)
           return
-        setSelection(newStart, newEnd)
+        setSelection(newStart, newEnd, 'right', 0)
       }, second)
       return
     }
@@ -184,19 +184,19 @@ export = createExtension(() => {
         return
 
       if (!preSelection) {
-        setSelection(newStart, newEnd)
+        setSelection(newStart, newEnd, 'right', 0)
       }
       else {
         const start = preSelection[0]
         if (preActive.line !== line) {
           preActive = null
-          setSelection(newStart, newEnd)
+          setSelection(newStart, newEnd, 'right', 0)
         }
         else if (start.character >= selection.active.character) {
-          setSelection(newStart, newEnd, 'left')
+          setSelection(newStart, newEnd, 'left', 0)
         }
         else {
-          setSelection(newStart, newEnd)
+          setSelection(newStart, newEnd, 'right', 0)
         }
       }
     }, updateSecond)
