@@ -12,6 +12,8 @@ export = createExtension(() => {
   const updateSecond = getConfiguration('autoclick.updateSecond') as number
 
   addEventListener('selection-change', (e) => {
+    if (e.textEditor.document.fileName === 'exthost')
+      return
     if (timer)
       clearTimeout(timer)
 
@@ -213,7 +215,9 @@ export = createExtension(() => {
     stop = setTimeout(() =>
       isChanging = false, 500)
   })
-  addEventListener('activeText-change', () => {
+  addEventListener('activeText-change', (textEditor) => {
+    if (textEditor?.document.fileName === 'exthost')
+      return
     isChanging = true
     preKind = null
     if (timer)
