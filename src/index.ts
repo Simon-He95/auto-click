@@ -108,6 +108,10 @@ export = createExtension(() => {
       preKind = e.kind
       return
     }
+    else if (e.kind === 3) {
+      // 双击
+      preKind = null
+    }
     else {
       preKind = undefined
     }
