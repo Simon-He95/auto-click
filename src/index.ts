@@ -91,21 +91,19 @@ export = createExtension(() => {
       }, second)
       return
     }
-    preSelections = null
-    if (selection.start.line !== selection.end.line)
-      return
 
     if (preKind === null) {
       preKind = e.kind
     }
-    else if ((preKind === 2) && (preKind === e.kind)) {
+    else if ((preKind === 2) && (preKind === e.kind) && !preSelections) {
       // 使用鼠标拖拽，就不干涉
       preKind = e.kind
+      preSelections = selections
       return
     }
-    else if ((preKind === 1) && (preKind === e.kind)) {
+    else if ((preKind === 1 && preKind === e.kind) || (!preKind && e.kind === 1)) {
       // 键盘一个一个移动，也不干涉
-      preKind = e.kind
+      preKind = undefined
       return
     }
     else if (e.kind === 3) {
@@ -115,6 +113,9 @@ export = createExtension(() => {
     else {
       preKind = undefined
     }
+    preSelections = null
+    if (selection.start.line !== selection.end.line)
+      return
 
     if (selection.start.line === selection.end.line && selection.start.character === selection.end.character) {
       // 单击，如果单机超过800ms，则自动选中多个内容
